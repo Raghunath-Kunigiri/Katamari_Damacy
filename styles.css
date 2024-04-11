@@ -6,4 +6,6 @@ body {
 
 canvas {
     display: block;
+    background-color: #87CEEB;
+    /* Sky Blue */
 }
