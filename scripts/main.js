@@ -7,15 +7,21 @@ let katamari = {
     x: canvas.width / 2,
     y: canvas.height / 2,
     radius: 20,
-    color: '#FF6347' // Tomato color
+    color: '#FF6347', // Tomato color
+    attachedObjects: [] // Array to store attached objects
 };
 
+// Define objects to collect
 // Define objects to collect
 let objects = [
     { x: 100, y: 100, radius: 15, color: '#32CD32' }, // Lime green
     { x: 200, y: 200, radius: 25, color: '#FFD700' }, // Gold
-    { x: 300, y: 300, radius: 20, color: '#8A2BE2' } // Blue Violet
+    { x: 300, y: 300, radius: 20, color: '#8A2BE2' }, // Blue Violet
+    { x: 400, y: 150, radius: 18, color: '#FFA500' }, // Orange
+    { x: 500, y: 250, radius: 22, color: '#FFFF00' }, // Yellow
+    { x: 600, y: 350, radius: 24, color: '#0000FF' } // Blue
 ];
+
 
 // Function to draw katamari
 function drawKatamari() {
