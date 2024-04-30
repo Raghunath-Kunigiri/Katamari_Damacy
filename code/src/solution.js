@@ -36,7 +36,11 @@ function initializeAudioContext() {
         audioContext = new(window.AudioContext || window.webkitAudioContext)();
     }
     if (audioContext.state === 'suspended') {
-        audioContext.resume();
+        audioContext.resume().then(() => {
+            console.log("AudioContext resumed successfully!");
+        }).catch(error => {
+            console.error("Error resuming AudioContext:", error);
+        });
     }
 }
 // Function to play background music
