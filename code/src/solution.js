@@ -29,7 +29,19 @@ document.addEventListener('DOMContentLoaded', function() {
 // Declare audioContext globally
 const audioContext = new(window.AudioContext || window.webkitAudioContext)();
 // Start background music function
+
+// Function to initialize or resume the AudioContext safely after user interaction
+function initializeAudioContext() {
+    if (!audioContext) {
+        audioContext = new(window.AudioContext || window.webkitAudioContext)();
+    }
+    if (audioContext.state === 'suspended') {
+        audioContext.resume();
+    }
+}
+// Function to play background music
 const playBackgroundMusic = async(url) => {
+    if (!audioContext) return; // Check if AudioContext is initialized
     try {
         const musicBuffer = await loadSound(url);
         if (musicBuffer) {
@@ -55,6 +67,26 @@ const loadSound = async(url) => {
         return null;
     }
 };
+
+// Create start button and its event handler
+function createStartButton() {
+    const button = document.createElement("button");
+    button.textContent = "Start Game";
+    document.body.appendChild(button);
+    button.addEventListener("click", function() {
+        initializeAudioContext(); // Initialize or resume AudioContext on user interaction
+        startGame();
+    });
+}
+
+async function startGame() {
+    await init();
+    playBackgroundMusic('./assets/Audio/Crazy_Frog.mp3');
+    renderLoop();
+    document.querySelector("button").style.display = "none"; // Assume there's only one button
+}
+
+document.addEventListener('DOMContentLoaded', createStartButton);
 // Function to stop background music
 const stopBackgroundMusic = () => {
     if (backgroundMusicSource) {
@@ -425,8 +457,6 @@ const init = async() => {
     setupEventListeners();
     renderLoop(); // Start the game loop
 };
-
-
 // Start the game
 init().then(() => {;
     renderLoop(); // Start the game loop
