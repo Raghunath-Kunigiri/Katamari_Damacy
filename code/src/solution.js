@@ -16,7 +16,7 @@ let toys = []; // To keep track of the toys in the scene
 let timerElement; // To display the timer
 let toyCountElement; // To display the toy count
 let gameOverElement; // To display the game over title
-let timerSeconds = 300; // 150-second timer
+let timerSeconds = 180; // 150-second timer
 let timerInterval; // For updating the timer
 let gameEnded = false; // Game state to check if the game has ended
 let backgroundMusicSource; // Declare this globally or in a broader scope
@@ -160,7 +160,7 @@ const loadModel = (url) => new Promise((resolve, reject) => {
 // Function to add toys to the scene with random colors
 const addToys = () => {
     const toyGeometry = new THREE.BoxGeometry(2, 2, 2);
-    const numToys = 100; // Total number of toys
+    const numToys = 50; // Total number of toys
     for (let i = 0; i < numToys; i++) {
         const toyMaterial = new THREE.MeshBasicMaterial({ color: getRandomColor() });
         const posX = Math.random() * (floorBounds.maxX - floorBounds.minX - 2) + floorBounds.minX + 1;
@@ -173,9 +173,13 @@ const addToys = () => {
     }
 };
 
+// Function to update the toy count display
 const updateToyCountDisplay = () => {
     if (toyCountElement) {
-        toyCountElement.textContent = `Toys Left:${toys.length}`; // Display the number of toys left
+        toyCountElement.textContent = `Toys Left: ${toys.length}`;
+        if (toys.length === 0) {
+            showCongratulations(); // Check here also to handle any edge cases
+        }
     }
 };
 // Function to maintain a consistent camera distance
@@ -261,6 +265,25 @@ const updateBallPosition = () => {
     Soccer_ball.position.copy(newPosition);
     updateCameraPosition();
 };
+
+// Function to show the congratulations message
+const showCongratulations = () => {
+    if (!gameOverElement) {
+        gameOverElement = document.createElement("div");
+        gameOverElement.style.position = "absolute";
+        gameOverElement.style.top = "50%";
+        gameOverElement.style.left = "50%";
+        gameOverElement.style.transform = "translate(-50%, -50%)";
+        gameOverElement.style.fontSize = "48px";
+        gameOverElement.style.color = "white";
+        gameOverElement.style.backgroundColor = "rgba(0, 0, 0, 0.5)";
+        gameOverElement.style.padding = "20px";
+        gameOverElement.textContent = "Congratulations! All toys collected.";
+        document.body.appendChild(gameOverElement);
+    }
+    stopBackgroundMusic(); // Stop the background music if playing
+    gameEnded = true; // Ensure the game state is ended to prevent further updates
+};
 // After a toy is collected and removed
 const checkCollision = () => {
     const ballBox = new THREE.Box3().setFromObject(Soccer_ball);
@@ -278,6 +301,9 @@ const checkCollision = () => {
             timerSeconds += 1; // Increment timer by one second for each toy collected
             updateToyCountDisplay();
             updateTimerDisplay(); // Update the UI for the timer
+            if (toys.length === 0) {
+                showCongratulations(); // Show congratulations if all toys are collected
+            }
         }
     }
     if (toys.length === 0) {
@@ -314,9 +340,11 @@ const showGameOver = () => {
         document.body.appendChild(gameOverElement);
     }
 };
+
+
 // Function to start and manage the timer
 const startTimer = () => {
-    timerSeconds = 300; // Starting time in seconds
+    timerSeconds = 180; // Starting time in seconds
     timerInterval = setInterval(() => {
         if (timerSeconds > 0 && !gameEnded) {
             timerSeconds--;
