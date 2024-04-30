@@ -16,7 +16,7 @@ let toys = []; // To keep track of the toys in the scene
 let timerElement; // To display the timer
 let toyCountElement; // To display the toy count
 let gameOverElement; // To display the game over title
-let timerSeconds = 150; // 150-second timer
+let timerSeconds = 300; // 150-second timer
 let timerInterval; // For updating the timer
 let gameEnded = false; // Game state to check if the game has ended
 let backgroundMusicSource; // Declare this globally or in a broader scope
@@ -286,10 +286,12 @@ const checkCollision = () => {
     }
 };
 
-// Function to update the timer
+// Function to update the timer display to show minutes and seconds
 const updateTimerDisplay = () => {
     if (timerElement) {
-        timerElement.textContent = `Time:${timerSeconds}`; // Display remaining time
+        const minutes = Math.floor(timerSeconds / 60);
+        const seconds = timerSeconds % 60;
+        timerElement.textContent = `Time Left: ${minutes}:${seconds.toString().padStart(2, '0')}`; // Format seconds with leading zero
     }
 };
 
@@ -312,14 +314,20 @@ const showGameOver = () => {
         document.body.appendChild(gameOverElement);
     }
 };
+// Function to start and manage the timer
 const startTimer = () => {
-    timerSeconds = 150;
+    timerSeconds = 300; // Starting time in seconds
     timerInterval = setInterval(() => {
         if (timerSeconds > 0 && !gameEnded) {
             timerSeconds--;
             updateTimerDisplay();
             if (timerSeconds <= 0) {
                 showGameOver(); // End the game if time runs out
+            }
+        } else {
+            clearInterval(timerInterval); // Stop the timer if the game ends
+            if (gameEnded) {
+                showGameOver();
             }
         }
     }, 1000); // Update every second
@@ -361,7 +369,7 @@ const init = async() => {
     toyCountElement = document.createElement('div');
     toyCountElement.style.position = 'absolute';
     toyCountElement.style.top = '10px';
-    toyCountElement.style.right = '100px';
+    toyCountElement.style.right = '170px';
     toyCountElement.style.fontSize = '24px';
     toyCountElement.style.color = 'white';
     document.body.appendChild(toyCountElement);
