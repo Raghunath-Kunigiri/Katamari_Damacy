@@ -5,8 +5,8 @@ let renderer, scene, camera, Soccer_ball;
 let arrowHelper; // Declare arrowHelper globally if not already done
 let acceleration = new THREE.Vector3(0, 0, 0); // Initialize acceleration vector
 const keysPressed = { ArrowUp: false, ArrowDown: false, ArrowLeft: false, ArrowRight: false, w: false, s: false, a: false, d: false, q: false, e: false };
-// const acceleration = 0.02; // Acceleration of the ball
-const ballDeceleration = 0.08; // Deceleration of the ball when not pressing any keys
+const accelerationAmount = 0.02; // Amount by which the ball's speed will increase per frame
+const decelerationFactor = 0.98; // Factor by which the velocity decreases per frameconst ballDeceleration = 0.08; // Deceleration of the ball when not pressing any keys
 let velocity = new THREE.Vector3(0, 0, 0); // Initial velocity of the ball
 const ballMoveSpeed = 0.5; // Speed of ball movement
 const ballRotationSpeed = 0.1; // Speed of ball rotation
@@ -214,11 +214,27 @@ const updateBallPosition = () => {
     // Apply the acceleration to velocity
     velocity.add(acceleration);
     // Apply deceleration
-    velocity.multiplyScalar(1 - ballDeceleration);
+    // velocity.multiplyScalar(1 - ballDeceleration);
     // Limit the velocity to the maximum speed
     velocity.clampLength(0, maxSpeed);
+    // Apply deceleration
+    velocity.multiplyScalar(decelerationFactor);
+
+    // Clamp the velocity to ensure it doesn't exceed maxSpeed
+    if (velocity.length() > maxSpeed) {
+        velocity.normalize().multiplyScalar(maxSpeed);
+    }
     // Update the position using the velocity vector
     Soccer_ball.position.add(velocity);
+    // Enforce boundary conditions
+    if (Soccer_ball.position.x <= floorBounds.minX || Soccer_ball.position.x >= floorBounds.maxX) {
+        velocity.x = 0;
+        Soccer_ball.position.x = THREE.MathUtils.clamp(Soccer_ball.position.x, floorBounds.minX, floorBounds.maxX);
+    }
+    if (Soccer_ball.position.z <= floorBounds.minZ || Soccer_ball.position.z >= floorBounds.maxZ) {
+        velocity.z = 0;
+        Soccer_ball.position.z = THREE.MathUtils.clamp(Soccer_ball.position.z, floorBounds.minZ, floorBounds.maxZ);
+    }
     // Calculate potential new position
     let newPos = new THREE.Vector3().addVectors(Soccer_ball.position, velocity);
     // Enforce boundaries
@@ -226,6 +242,10 @@ const updateBallPosition = () => {
     newPos.z = THREE.MathUtils.clamp(newPos.z, floorBounds.minZ, floorBounds.maxZ);
     // Update the ball's position
     Soccer_ball.position.copy(newPos);
+
+    // Boundary checks to keep the ball within the field
+    Soccer_ball.position.clamp(new THREE.Vector3(floorBounds.minX, 0, floorBounds.minZ), new THREE.Vector3(floorBounds.maxX, 0, floorBounds.maxZ));
+
     // Check boundaries and adjust the position and velocity if needed
     if (newPos.x < floorBounds.minX || newPos.x === floorBounds.minX) {
         velocity.x = 0; // Stop horizontal movement
