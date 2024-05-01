@@ -4,13 +4,14 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 let renderer, scene, camera, Soccer_ball;
 let arrowHelper; // Declare arrowHelper globally if not already done
 let acceleration = new THREE.Vector3(0, 0, 0); // Initialize acceleration vector
-const keysPressed = { ArrowUp: false, ArrowDown: false, ArrowLeft: false, ArrowRight: false, w: false, s: false, a: false, d: false, q: false, e: false };
+const keysPressed = { ArrowUp: false, ArrowDown: false, ArrowLeft: false, ArrowRight: false, w: false, s: false, a: false, d: false, q: false, e: false, space: false };
 const accelerationAmount = 0.02; // Amount by which the ball's speed will increase per frame
 const decelerationFactor = 0.98; // Factor by which the velocity decreases per frameconst ballDeceleration = 0.08; // Deceleration of the ball when not pressing any keys
 let velocity = new THREE.Vector3(0, 0, 0); // Initial velocity of the ball
 const ballMoveSpeed = 0.5; // Speed of ball movement
 const ballRotationSpeed = 0.1; // Speed of ball rotation
-const ballPosition = new THREE.Vector3(0, 3, 0);
+const ballRadius = 3; // This is the assumed radius based on your scaling factor
+const ballPosition = new THREE.Vector3(0, ballRadius, 0); // Position it at one radius above the grass
 const cameraOffset = new THREE.Vector3(0, 15, 10); // Offset to maintain camera position relative to the ball
 let toys = []; // To keep track of the toys in the scene
 let timerElement; // To display the timer
@@ -20,6 +21,8 @@ let timerSeconds = 300; // 150-second timer
 let timerInterval; // For updating the timer
 let gameEnded = false; // Game state to check if the game has ended
 let backgroundMusicSource; // Declare this globally or in a broader scope
+const gravity = 0.05; // Gravity effect to pull the ball down
+let jumpStrength = 1.5; // Initial strength of the jump
 
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -213,8 +216,6 @@ const updateBallPosition = () => {
     }
     // Apply the acceleration to velocity
     velocity.add(acceleration);
-    // Apply deceleration
-    // velocity.multiplyScalar(1 - ballDeceleration);
     // Limit the velocity to the maximum speed
     velocity.clampLength(0, maxSpeed);
     // Apply deceleration
@@ -272,6 +273,27 @@ const updateBallPosition = () => {
         Soccer_ball.rotation.x -= ballRotationSpeed;
         Soccer_ball.rotation.z += ballRotationSpeed;
     }
+
+    // Vertical movement logic
+    if (keysPressed.space && Soccer_ball.position.y <= ballRadius + 0.1) { // Allow jump only if the ball is close to or on the ground
+        velocity.y += jumpStrength; // Apply jump strength to velocity
+    }
+
+    // Apply gravity if the ball is above the ground
+    if (Soccer_ball.position.y > ballRadius) {
+        velocity.y -= gravity;
+    } else {
+        Soccer_ball.position.y = ballRadius; // Ensure ball does not go below the grass
+        velocity.y = 0; // Reset vertical velocity when touching the ground
+    }
+
+    // window.addEventListener('keydown', (e) => {
+    //     // Handle space key for jumping...
+    // });
+
+    // window.addEventListener('keyup', (e) => {
+    //     // Handle space key release...
+    // });
     // Calculate the new position
     const newPosition = Soccer_ball.position.clone().add(moveVector);
     // Check collision with the plane (grass field)
