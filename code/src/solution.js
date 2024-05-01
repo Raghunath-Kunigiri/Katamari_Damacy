@@ -16,7 +16,7 @@ let toys = []; // To keep track of the toys in the scene
 let timerElement; // To display the timer
 let toyCountElement; // To display the toy count
 let gameOverElement; // To display the game over title
-let timerSeconds = 180; // 150-second timer
+let timerSeconds = 300; // 150-second timer
 let timerInterval; // For updating the timer
 let gameEnded = false; // Game state to check if the game has ended
 let backgroundMusicSource; // Declare this globally or in a broader scope
@@ -278,7 +278,7 @@ const showCongratulations = () => {
         gameOverElement.style.color = "white";
         gameOverElement.style.backgroundColor = "rgba(0, 0, 0, 0.5)";
         gameOverElement.style.padding = "20px";
-        gameOverElement.textContent = "Congratulations! All toys collected.";
+        gameOverElement.textContent = "Congratulations! You won the Game ";
         document.body.appendChild(gameOverElement);
     }
     stopBackgroundMusic(); // Stop the background music if playing
