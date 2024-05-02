@@ -23,6 +23,7 @@ let gameEnded = false; // Game state to check if the game has ended
 let backgroundMusicSource; // Declare this globally or in a broader scope
 const gravity = 0.05; // Gravity effect to pull the ball down
 let jumpStrength = 1.5; // Initial strength of the jump
+let arrowDistanceElement; // Declare arrowDistanceElement globally
 
 document.addEventListener('DOMContentLoaded', function() {
     createStartButton();
@@ -62,6 +63,57 @@ const playBackgroundMusic = async(url) => {
         console.error("Failed to play background music:", error);
     }
 };
+
+// Load the Arrow GLTF model for the arrow
+async function loadArrowModel() {
+    const loader = new GLTFLoader();
+    loader.load('./assets/Arrow/scene.gltf', (gltf) => {
+        const arrowModel = gltf.scene;
+
+        // Log that the model was loaded
+        console.log("Arrow model loaded", arrowModel);
+
+        // Remove existing arrowHelper if it exists
+        if (arrowHelper) {
+            scene.remove(arrowHelper);
+            console.log("Removed existing arrow helper from the scene");
+        }
+
+        // Adjust scale and position to ensure visibility
+        arrowModel.scale.set(10, 10, 10); // Adjust scale as necessary
+        arrowModel.position.copy(Soccer_ball.position);
+        arrowModel.position.y += 5; // Raise the position so it's visible above the ball
+
+        // Ensure all meshes have materials with DoubleSide rendering
+        arrowModel.traverse((child) => {
+            if (child.isMesh) {
+                child.material.side = THREE.DoubleSide;
+            }
+        });
+
+        // Adjust scale and position to ensure visibility
+        arrowModel.scale.set(10, 10, 10); // Adjust scale as necessary
+        arrowModel.position.copy(Soccer_ball.position);
+        arrowModel.position.y += 5; // Raise the position so it's visible above the ball
+
+        // Update the global arrowHelper reference
+        arrowHelper = arrowModel;
+        scene.add(arrowHelper);
+        console.log("Added new arrow helper to the scene");
+
+        // Log position and scale to verify
+        console.log(`Arrow position: ${arrowHelper.position}`);
+        console.log(`Arrow scale: ${arrowHelper.scale}`);
+
+    }, (xhr) => {
+        // Provide loading progress
+        console.log((xhr.loaded / xhr.total * 100) + '% loaded');
+    }, (error) => {
+        // Log an error if the model could not be loaded
+        console.error("Error loading the arrow model:", error);
+    });
+}
+
 // Function to load sound files
 const loadSound = async(url) => {
     try {
@@ -110,37 +162,105 @@ const floorBounds = {
 const getRandomColor = () => Math.floor(Math.random() * 0xffffff);
 // Function to find the nearest toy and get the direction towards it
 const getDirectionToNearestToy = () => {
-        let nearestToy = null;
-        let minDistance = Infinity;
-        let direction = new THREE.Vector3();
-        toys.forEach(toy => {
-            let distance = toy.position.distanceTo(Soccer_ball.position);
-            if (distance < minDistance) {
-                minDistance = distance;
-                nearestToy = toy;
-                direction.subVectors(toy.position, Soccer_ball.position).normalize();
-            }
+    let nearestToy = null;
+    let minDistance = Infinity;
+    let direction = new THREE.Vector3();
+    toys.forEach(toy => {
+        let distance = toy.position.distanceTo(Soccer_ball.position);
+        if (distance < minDistance) {
+            minDistance = distance;
+            nearestToy = toy;
+            direction.subVectors(toy.position, Soccer_ball.position).normalize();
+        }
+    });
+    return { nearestToy, direction };
+}
+
+
+// // Function to load GLTF model
+// Function to load a GLTF model from a URL
+async function loadModel(url) {
+    const loader = new GLTFLoader();
+    return new Promise((resolve, reject) => {
+        loader.load(url, (gltf) => {
+            resolve(gltf.scene);
+        }, undefined, (error) => {
+            console.error("Error loading model:", error);
+            reject(error);
         });
-        return { nearestToy, direction };
-    }
-    // Function to update or create an arrow pointing to the nearest toy
+    });
+}
+
+
+// // Function to load the GLTF model for the arrow
+// const loadArrowModel = async() => {
+//     try {
+//         const loader = new GLTFLoader();
+//         const arrowModel = await new Promise((resolve, reject) => {
+//             loader.load('./assets/Arrow', (gltf) => {
+//                 resolve(gltf.scene);
+//             }, undefined, (error) => {
+//                 console.error("Error loading model:", error);
+//                 reject(error);
+//             });
+//         });
+//         const arrowMesh = arrowModel.children[0];
+//         arrowHelper = new THREE.ArrowHelper(arrowMesh.getWorldDirection(new THREE.Vector3()), Soccer_ball.position, 10, 0xffff00);
+//         scene.add(arrowHelper);
+//     } catch (error) {
+//         console.error("Failed to load arrow model:", error);
+//     }
+// };
+
+// Function to update or create an arrow pointing to the nearest toy
 const updateDirectionToToy = () => {
     const { nearestToy, direction } = getDirectionToNearestToy();
     if (nearestToy) {
         if (arrowHelper) {
+            // Update existing ArrowHelper
             arrowHelper.setDirection(direction);
             arrowHelper.position.copy(Soccer_ball.position);
         } else {
+            // Create a new ArrowHelper if none exists
             arrowHelper = new THREE.ArrowHelper(direction, Soccer_ball.position, 10, 0xffff00);
             scene.add(arrowHelper);
         }
     } else {
+        // Handle case where no toys are available
         if (arrowHelper) {
             scene.remove(arrowHelper);
             arrowHelper = null;
         }
     }
+
+    // Optionally, handle arrow distance display update or removal
+    updateArrowDistanceDisplay(nearestToy, direction);
 };
+
+const updateArrowDistanceDisplay = (nearestToy, direction) => {
+    if (nearestToy) {
+        if (!arrowDistanceElement) {
+            // Create arrowDistanceElement if it does not exist
+            arrowDistanceElement = document.createElement('div');
+            arrowDistanceElement.style.position = 'absolute';
+            arrowDistanceElement.style.color = 'white';
+            arrowDistanceElement.style.fontSize = '18px';
+            arrowDistanceElement.style.left = '10px';
+            arrowDistanceElement.style.top = '10px';
+            document.body.appendChild(arrowDistanceElement);
+        }
+        // Update text content
+        const distance = Soccer_ball.position.distanceTo(nearestToy.position).toFixed(2);
+        arrowDistanceElement.textContent = `Distance to nearest toy: ${distance} meters`;
+    } else {
+        if (arrowDistanceElement) {
+            document.body.removeChild(arrowDistanceElement);
+            arrowDistanceElement = null;
+        }
+    }
+};
+
+
 // Main render loop
 const renderLoop = () => {
     if (!gameEnded) {
@@ -151,13 +271,6 @@ const renderLoop = () => {
     renderer.render(scene, camera);
     requestAnimationFrame(renderLoop);
 };
-const loadModel = (url) => new Promise((resolve, reject) => {
-    const loader = new GLTFLoader();
-    loader.load(url, (gltf) => resolve(gltf.scene), undefined, (error) => {
-        console.error("Error loading model:", error);
-        reject(error);
-    });
-});
 
 // Function to add toys to the scene with random colors
 const addToys = () => {
@@ -191,7 +304,7 @@ const updateCameraPosition = () => {
     camera.position.lerp(desiredCameraPosition, 0.1); // Smoothly interpolate to the desired position
     camera.lookAt(Soccer_ball.position); // Ensure the camera looks at the ball
 };
-const maxSpeed = 0.4; // Maximum speed of the ball
+const maxSpeed = 0.35; // Maximum speed of the ball
 // Update ball position
 const updateBallPosition = () => {
     // Reset acceleration at the beginning of each frame
@@ -286,13 +399,6 @@ const updateBallPosition = () => {
         velocity.y = 0; // Reset vertical velocity when touching the ground
     }
 
-    // window.addEventListener('keydown', (e) => {
-    //     // Handle space key for jumping...
-    // });
-
-    // window.addEventListener('keyup', (e) => {
-    //     // Handle space key release...
-    // });
     // Calculate the new position
     const newPosition = Soccer_ball.position.clone().add(moveVector);
     // Check collision with the plane (grass field)
@@ -306,26 +412,6 @@ const updateBallPosition = () => {
     Soccer_ball.position.copy(newPosition);
     updateCameraPosition();
 };
-
-// Function to show the congratulations message
-// const showCongratulations = () => {
-//     if (!gameOverElement) {
-//         gameOverElement = document.createElement("div");
-//         gameOverElement.style.position = "absolute";
-//         gameOverElement.style.top = "50%";
-//         gameOverElement.style.left = "50%";
-//         gameOverElement.style.transform = "translate(-50%, -50%)";
-//         gameOverElement.style.fontSize = "48px";
-//         gameOverElement.style.color = "white";
-//         gameOverElement.style.backgroundColor = "rgba(0, 0, 0, 0.5)";
-//         gameOverElement.style.padding = "20px";
-//         gameOverElement.textContent = "Congratulations! You won the Game ";
-//         document.body.appendChild(gameOverElement);
-//     }
-//     stopBackgroundMusic(); // Stop the background music if playing
-//     gameEnded = true; // Ensure the game state is ended to prevent further updates
-// };
-
 
 const showCongratulations = () => {
     if (!gameOverElement) {
@@ -351,36 +437,6 @@ const showCongratulations = () => {
     stopBackgroundMusic();
     gameEnded = true;
 }
-
-// After a toy is collected and removed
-// const checkCollision = () => {
-//     const ballBox = new THREE.Box3().setFromObject(Soccer_ball);
-//     for (let i = toys.length - 1; i >= 0; i--) {
-//         const toyBox = new THREE.Box3().setFromObject(toys[i]);
-//         if (ballBox.intersectsBox(toyBox)) { // If collision occurs
-//             const toyColor = toys[i].material.color.getHex(); // Get toy's color
-//             Soccer_ball.traverse((child) => {
-//                 if (child.isMesh) {
-//                     child.material.color.set(toyColor); // Change ball's color
-//                 }
-//             });
-//             scene.remove(toys[i]); // Remove toy from scene
-//             toys.splice(i, 1); // Remove from toys array
-//             timerSeconds += 1; // Increment timer by one second for each toy collected
-//             updateToyCountDisplay();
-//             updateTimerDisplay(); // Update the UI for the timer
-//             if (toys.length === 0) {
-//                 showCongratulations(); // Show congratulations if all toys are collected
-//             }
-//         }
-//     }
-//     if (toys.length === 0) {
-//         gameEnded = true;
-//         showGameOver();
-//     }
-// };
-
-
 
 const checkCollision = () => {
     const ballBox = new THREE.Box3().setFromObject(Soccer_ball);
