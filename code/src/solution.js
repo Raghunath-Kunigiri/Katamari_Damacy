@@ -342,10 +342,10 @@ const showCongratulations = () => {
         document.body.appendChild(gameOverElement);
 
         const winImage = new Image();
-        winImage.src = './assets/You Won.webp'; // Update path to your downloaded image
+        winImage.src = './assets/cup.gif'; // Update path to your downloaded image
         winImage.style.width = "50%";
         winImage.style.height = "auto";
-        winImage.style.borderRadius = "10px";
+        winImage.style.borderRadius = "100px";
         gameOverElement.appendChild(winImage);
     }
     stopBackgroundMusic();
