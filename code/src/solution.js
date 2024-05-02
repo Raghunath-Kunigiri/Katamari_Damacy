@@ -162,7 +162,7 @@ const loadModel = (url) => new Promise((resolve, reject) => {
 // Function to add toys to the scene with random colors
 const addToys = () => {
     const toyGeometry = new THREE.BoxGeometry(2, 2, 2);
-    const numToys = 1; // Total number of toys
+    const numToys = 5; // Total number of toys
     for (let i = 0; i < numToys; i++) {
         const toyMaterial = new THREE.MeshBasicMaterial({ color: getRandomColor() });
         const posX = Math.random() * (floorBounds.maxX - floorBounds.minX - 2) + floorBounds.minX + 1;
@@ -387,14 +387,21 @@ const checkCollision = () => {
     for (let i = toys.length - 1; i >= 0; i--) {
         const toyBox = new THREE.Box3().setFromObject(toys[i]);
         if (ballBox.intersectsBox(toyBox)) {
-            scene.remove(toys[i]);
-            toys.splice(i, 1);
-            timerSeconds += 1;
+            const toyColor = toys[i].material.color.getHex(); // Get toy's color
+            Soccer_ball.traverse((child) => {
+                if (child.isMesh) {
+                    child.material.color.set(toyColor); // Change ball's color
+                }
+            });
+
+            // Call explodeToy() function when collision occurs
+            explodeToy(toys[i]);
+
+            scene.remove(toys[i]); // Remove toy from scene
+            toys.splice(i, 1); // Remove from toys array
+            timerSeconds += 1; // Increment timer by one second for each toy collected
             updateToyCountDisplay();
-            updateTimerDisplay();
-            if (toys.length === 0) {
-                showCongratulations(); // Show congratulations if all toys are collected
-            }
+            updateTimerDisplay(); // Update the UI for the timer
         }
     }
     if (toys.length === 0) {
@@ -403,6 +410,52 @@ const checkCollision = () => {
     }
 };
 
+// Function to create explosion animation for a toy
+const explodeToy = (toy) => {
+    const explosionPieces = []; // Array to hold the toy pieces
+
+    // Create smaller pieces from the toy geometry
+    const toyGeometry = toy.geometry;
+    const toyMaterial = toy.material.clone(); // Clone toy's material
+    const pieceCount = 10; // Number of pieces
+
+    for (let i = 0; i < pieceCount; i++) {
+        // Create a new mesh for each piece
+        const piece = new THREE.Mesh(toyGeometry, toyMaterial);
+
+        // Randomize rotation
+        piece.rotation.set(Math.random() * Math.PI * 2, Math.random() * Math.PI * 2, Math.random() * Math.PI * 2);
+
+        // Randomize scale
+        const scale = Math.random() * 0.5 + 0.5; // Scale between 0.5 and 1
+        piece.scale.set(scale, scale, scale);
+
+        // Add piece to the scene
+        scene.add(piece);
+        explosionPieces.push(piece);
+    }
+
+    // Move pieces away from the original toy's position
+    const explosionForce = 5;
+    explosionPieces.forEach((piece) => {
+        const direction = new THREE.Vector3(
+            Math.random() - 0.5,
+            Math.random() - 0.5,
+            Math.random() - 0.5
+        ).normalize();
+        piece.position.copy(toy.position).addScaledVector(direction, explosionForce);
+    });
+
+    // Remove the original toy from the scene
+    scene.remove(toy);
+
+    // Remove exploded pieces after a delay
+    setTimeout(() => {
+        explosionPieces.forEach((piece) => {
+            scene.remove(piece);
+        });
+    }, 100); // Adjust the delay (in milliseconds) as needed
+};
 
 // Function to update the timer display to show minutes and seconds
 const updateTimerDisplay = () => {
