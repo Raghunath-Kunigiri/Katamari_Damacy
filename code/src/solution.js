@@ -24,7 +24,6 @@ let backgroundMusicSource; // Declare this globally or in a broader scope
 const gravity = 0.05; // Gravity effect to pull the ball down
 let jumpStrength = 1.5; // Initial strength of the jump
 
-
 document.addEventListener('DOMContentLoaded', function() {
     createStartButton();
 });
@@ -163,7 +162,7 @@ const loadModel = (url) => new Promise((resolve, reject) => {
 // Function to add toys to the scene with random colors
 const addToys = () => {
     const toyGeometry = new THREE.BoxGeometry(2, 2, 2);
-    const numToys = 50; // Total number of toys
+    const numToys = 1; // Total number of toys
     for (let i = 0; i < numToys; i++) {
         const toyMaterial = new THREE.MeshBasicMaterial({ color: getRandomColor() });
         const posX = Math.random() * (floorBounds.maxX - floorBounds.minX - 2) + floorBounds.minX + 1;
@@ -309,40 +308,90 @@ const updateBallPosition = () => {
 };
 
 // Function to show the congratulations message
+// const showCongratulations = () => {
+//     if (!gameOverElement) {
+//         gameOverElement = document.createElement("div");
+//         gameOverElement.style.position = "absolute";
+//         gameOverElement.style.top = "50%";
+//         gameOverElement.style.left = "50%";
+//         gameOverElement.style.transform = "translate(-50%, -50%)";
+//         gameOverElement.style.fontSize = "48px";
+//         gameOverElement.style.color = "white";
+//         gameOverElement.style.backgroundColor = "rgba(0, 0, 0, 0.5)";
+//         gameOverElement.style.padding = "20px";
+//         gameOverElement.textContent = "Congratulations! You won the Game ";
+//         document.body.appendChild(gameOverElement);
+//     }
+//     stopBackgroundMusic(); // Stop the background music if playing
+//     gameEnded = true; // Ensure the game state is ended to prevent further updates
+// };
+
+
 const showCongratulations = () => {
     if (!gameOverElement) {
         gameOverElement = document.createElement("div");
         gameOverElement.style.position = "absolute";
-        gameOverElement.style.top = "50%";
-        gameOverElement.style.left = "50%";
-        gameOverElement.style.transform = "translate(-50%, -50%)";
-        gameOverElement.style.fontSize = "48px";
-        gameOverElement.style.color = "white";
-        gameOverElement.style.backgroundColor = "rgba(0, 0, 0, 0.5)";
-        gameOverElement.style.padding = "20px";
-        gameOverElement.textContent = "Congratulations! You won the Game ";
+        gameOverElement.style.top = "0";
+        gameOverElement.style.left = "0";
+        gameOverElement.style.width = "100%";
+        gameOverElement.style.height = "100%";
+        gameOverElement.style.display = "flex";
+        gameOverElement.style.justifyContent = "center";
+        gameOverElement.style.alignItems = "center";
+        gameOverElement.style.backgroundColor = "rgba(0, 0, 0, 0.7)";
         document.body.appendChild(gameOverElement);
+
+        const winImage = new Image();
+        winImage.src = './assets/You Won.webp'; // Update path to your downloaded image
+        winImage.style.width = "50%";
+        winImage.style.height = "auto";
+        winImage.style.borderRadius = "10px";
+        gameOverElement.appendChild(winImage);
     }
-    stopBackgroundMusic(); // Stop the background music if playing
-    gameEnded = true; // Ensure the game state is ended to prevent further updates
-};
+    stopBackgroundMusic();
+    gameEnded = true;
+}
+
 // After a toy is collected and removed
+// const checkCollision = () => {
+//     const ballBox = new THREE.Box3().setFromObject(Soccer_ball);
+//     for (let i = toys.length - 1; i >= 0; i--) {
+//         const toyBox = new THREE.Box3().setFromObject(toys[i]);
+//         if (ballBox.intersectsBox(toyBox)) { // If collision occurs
+//             const toyColor = toys[i].material.color.getHex(); // Get toy's color
+//             Soccer_ball.traverse((child) => {
+//                 if (child.isMesh) {
+//                     child.material.color.set(toyColor); // Change ball's color
+//                 }
+//             });
+//             scene.remove(toys[i]); // Remove toy from scene
+//             toys.splice(i, 1); // Remove from toys array
+//             timerSeconds += 1; // Increment timer by one second for each toy collected
+//             updateToyCountDisplay();
+//             updateTimerDisplay(); // Update the UI for the timer
+//             if (toys.length === 0) {
+//                 showCongratulations(); // Show congratulations if all toys are collected
+//             }
+//         }
+//     }
+//     if (toys.length === 0) {
+//         gameEnded = true;
+//         showGameOver();
+//     }
+// };
+
+
+
 const checkCollision = () => {
     const ballBox = new THREE.Box3().setFromObject(Soccer_ball);
     for (let i = toys.length - 1; i >= 0; i--) {
         const toyBox = new THREE.Box3().setFromObject(toys[i]);
-        if (ballBox.intersectsBox(toyBox)) { // If collision occurs
-            const toyColor = toys[i].material.color.getHex(); // Get toy's color
-            Soccer_ball.traverse((child) => {
-                if (child.isMesh) {
-                    child.material.color.set(toyColor); // Change ball's color
-                }
-            });
-            scene.remove(toys[i]); // Remove toy from scene
-            toys.splice(i, 1); // Remove from toys array
-            timerSeconds += 1; // Increment timer by one second for each toy collected
+        if (ballBox.intersectsBox(toyBox)) {
+            scene.remove(toys[i]);
+            toys.splice(i, 1);
+            timerSeconds += 1;
             updateToyCountDisplay();
-            updateTimerDisplay(); // Update the UI for the timer
+            updateTimerDisplay();
             if (toys.length === 0) {
                 showCongratulations(); // Show congratulations if all toys are collected
             }
@@ -353,6 +402,7 @@ const checkCollision = () => {
         showGameOver();
     }
 };
+
 
 // Function to update the timer display to show minutes and seconds
 const updateTimerDisplay = () => {
@@ -523,6 +573,7 @@ const init = async() => {
             keysPressed[e.key] = false;
         });
     };
+    // scene.add(wireframeSphere);
     setupScene();
     // Initial call to start music with interaction
     document.body.addEventListener('click', startBackgroundMusic, { once: true });
