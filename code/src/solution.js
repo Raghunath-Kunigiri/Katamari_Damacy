@@ -24,6 +24,17 @@ let backgroundMusicSource; // Declare this globally or in a broader scope
 const gravity = 0.05; // Gravity effect to pull the ball down
 let jumpStrength = 1.5; // Initial strength of the jump
 let arrowDistanceElement; // Declare arrowDistanceElement globally
+let collisionSoundBuffer; // Global variable to store the collision sound buffer
+
+// Function to load the collision sound
+const loadCollisionSound = async() => {
+    try {
+        collisionSoundBuffer = await loadSound('./assets/Audio/collision_sound.mp3');
+        console.log("Collision sound loaded successfully.");
+    } catch (error) {
+        console.error("Failed to load collision sound:", error);
+    }
+};
 
 document.addEventListener('DOMContentLoaded', function() {
     createStartButton();
@@ -191,26 +202,6 @@ async function loadModel(url) {
     });
 }
 
-
-// // Function to load the GLTF model for the arrow
-// const loadArrowModel = async() => {
-//     try {
-//         const loader = new GLTFLoader();
-//         const arrowModel = await new Promise((resolve, reject) => {
-//             loader.load('./assets/Arrow', (gltf) => {
-//                 resolve(gltf.scene);
-//             }, undefined, (error) => {
-//                 console.error("Error loading model:", error);
-//                 reject(error);
-//             });
-//         });
-//         const arrowMesh = arrowModel.children[0];
-//         arrowHelper = new THREE.ArrowHelper(arrowMesh.getWorldDirection(new THREE.Vector3()), Soccer_ball.position, 10, 0xffff00);
-//         scene.add(arrowHelper);
-//     } catch (error) {
-//         console.error("Failed to load arrow model:", error);
-//     }
-// };
 
 // Function to update or create an arrow pointing to the nearest toy
 const updateDirectionToToy = () => {
@@ -453,6 +444,7 @@ const checkCollision = () => {
                 if (child.isMesh) {
                     child.material.color.set(toyColor); // Change ball's color
                 }
+                playSound(collisionSoundBuffer);
             });
 
             // Call explodeToy() function when collision occurs
@@ -572,6 +564,7 @@ const init = async() => {
     renderer.setSize(window.innerWidth, window.innerHeight);
     // renderer.domElement.style.position = 'relative'; // Ensure correct positioning
     document.body.appendChild(renderer.domElement);
+    await loadCollisionSound(); // Make sure the collision sound is loaded
 
     scene = new THREE.Scene();
     camera = new THREE.PerspectiveCamera(95, window.innerWidth / window.innerHeight, 0.5, 1000);
@@ -704,6 +697,18 @@ const init = async() => {
     setupEventListeners();
     renderLoop(); // Start the game loop
 };
+
+const playSound = (buffer) => {
+    if (!audioContext || !buffer) return;
+    const source = audioContext.createBufferSource();
+    source.buffer = buffer;
+    source.connect(audioContext.destination);
+    source.start(0);
+};
+
+
+
+
 // Start the game
 init().then(() => {;
     renderLoop(); // Start the game loop
