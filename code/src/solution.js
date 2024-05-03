@@ -5,7 +5,7 @@ let renderer, scene, camera, Soccer_ball;
 let arrowHelper; // Declare arrowHelper globally if not already done
 let acceleration = new THREE.Vector3(0, 0, 0); // Initialize acceleration vector
 const keysPressed = { ArrowUp: false, ArrowDown: false, ArrowLeft: false, ArrowRight: false, w: false, s: false, a: false, d: false, q: false, e: false, space: false };
-const accelerationAmount = 0.02; // Amount by which the ball's speed will increase per frame
+const accelerationAmount = 0.01; // Amount by which the ball's speed will increase per frame
 const decelerationFactor = 0.98; // Factor by which the velocity decreases per frameconst ballDeceleration = 0.08; // Deceleration of the ball when not pressing any keys
 let velocity = new THREE.Vector3(0, 0, 0); // Initial velocity of the ball
 const ballMoveSpeed = 0.5; // Speed of ball movement
@@ -35,7 +35,6 @@ const loadCollisionSound = async() => {
         console.error("Failed to load collision sound:", error);
     }
 };
-
 document.addEventListener('DOMContentLoaded', function() {
     createStartButton();
 });
@@ -295,7 +294,7 @@ const updateCameraPosition = () => {
     camera.position.lerp(desiredCameraPosition, 0.1); // Smoothly interpolate to the desired position
     camera.lookAt(Soccer_ball.position); // Ensure the camera looks at the ball
 };
-const maxSpeed = 0.35; // Maximum speed of the ball
+const maxSpeed = 0.25; // Maximum speed of the ball
 // Update ball position
 const updateBallPosition = () => {
     // Reset acceleration at the beginning of each frame
