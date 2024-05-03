@@ -251,7 +251,7 @@ const updateArrowDistanceDisplay = (nearestToy, direction) => {
         }
         // Update text content
         const distance = Soccer_ball.position.distanceTo(nearestToy.position).toFixed(2);
-        arrowDistanceElement.textContent = `Distance to nearest toy: ${distance} meters`;
+        arrowDistanceElement.textContent = `Distance to nearest toy: ${distance} feet`;
     } else {
         if (arrowDistanceElement) {
             document.body.removeChild(arrowDistanceElement);
@@ -400,7 +400,13 @@ const updateBallPosition = () => {
     }
 
     // Calculate the new position
-    const newPosition = Soccer_ball.position.clone().add(moveVector);
+    const newPosition = Soccer_ball.position.clone().add(velocity);
+
+    // Update ball's rotation based on its movement
+    const rollFactor = 0.3; // Adjust as needed
+    const rollAxis = new THREE.Vector3(velocity.z, 0, -velocity.x).normalize(); // Perpendicular to velocity
+    Soccer_ball.rotateOnWorldAxis(rollAxis, velocity.length() * rollFactor);
+
     // Check collision with the plane (grass field)
     if (newPosition.x < floorBounds.minX || newPosition.x > floorBounds.maxX ||
         newPosition.z < floorBounds.minZ || newPosition.z > floorBounds.maxZ) {
@@ -412,7 +418,6 @@ const updateBallPosition = () => {
     Soccer_ball.position.copy(newPosition);
     updateCameraPosition();
 };
-
 const showCongratulations = () => {
     if (!gameOverElement) {
         gameOverElement = document.createElement("div");
