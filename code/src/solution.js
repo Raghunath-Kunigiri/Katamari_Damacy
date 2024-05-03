@@ -8,7 +8,7 @@ const keysPressed = { ArrowUp: false, ArrowDown: false, ArrowLeft: false, ArrowR
 const accelerationAmount = 0.01; // Amount by which the ball's speed will increase per frame
 const decelerationFactor = 0.98; // Factor by which the velocity decreases per frameconst ballDeceleration = 0.08; // Deceleration of the ball when not pressing any keys
 let velocity = new THREE.Vector3(0, 0, 0); // Initial velocity of the ball
-const ballMoveSpeed = 0.5; // Speed of ball movement
+const ballMoveSpeed = 0.3; // Speed of ball movement
 const ballRotationSpeed = 0.1; // Speed of ball rotation
 const ballRadius = 3; // This is the assumed radius based on your scaling factor
 const ballPosition = new THREE.Vector3(0, ballRadius, 0); // Position it at one radius above the grass
@@ -541,7 +541,7 @@ const showGameOver = () => {
 
 // Function to start and manage the timer
 const startTimer = () => {
-    timerSeconds = 180; // Starting time in seconds
+    timerSeconds = 60; // Starting time in seconds
     timerInterval = setInterval(() => {
         if (timerSeconds > 0 && !gameEnded) {
             timerSeconds--;
