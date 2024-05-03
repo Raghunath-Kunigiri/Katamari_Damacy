@@ -426,7 +426,7 @@ const showCongratulations = () => {
         winImage.src = './assets/cup.gif'; // Update path to your downloaded image
         winImage.style.width = "50%";
         winImage.style.height = "auto";
-        winImage.style.borderRadius = "100px";
+        winImage.style.borderRadius = "50px";
         gameOverElement.appendChild(winImage);
     }
     stopBackgroundMusic();
