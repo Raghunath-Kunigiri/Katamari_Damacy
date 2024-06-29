@@ -7,7 +7,7 @@ int main() {
 
   std::cout << "Enter your name: ";
   std::getline(std::cin, name);
-
+// This is branch 1
   std::cout << "Enter your age: ";
   std::cin >> age;
 
