@@ -5,6 +5,10 @@
 - Checkout this repo.
 - Install [`nodejs`](https://nodejs.org/).
 - In a terminal, from the `code/` directory, run `npm install`.
+- In a terminal, from the `code/` directory, run `npm run dev`. or `npm start`. 
+- Open a browser to `http://localhost:8080`.
+
+
 
 #### Usage
 
